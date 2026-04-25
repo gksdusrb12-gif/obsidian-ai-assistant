@@ -312,7 +312,26 @@ async function init() {
     initUpdater(showToast);
   }
 
-  // Auto-open settings if incomplete config
+ // ★ 이벤트 핸들러를 가장 먼저 바인딩 (자동 모달 열기보다 먼저)
+  document.getElementById('btn-settings').addEventListener('click', openSettingsModal);
+  document.getElementById('btn-close-settings').addEventListener('click', closeSettingsModal);
+  document.getElementById('btn-cancel-settings').addEventListener('click', closeSettingsModal);
+  document.getElementById('btn-save-settings').addEventListener('click', saveSettingsModal);
+  document.getElementById('btn-pick-folder').addEventListener('click', pickObsidianFolder);
+  document.getElementById('settings-modal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeSettingsModal();
+  });
+  // Esc 또는 Ctrl+, 로 설정 열기
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === ',') {
+      e.preventDefault();
+      openSettingsModal();
+    } else if (e.key === 'Escape') {
+      closeSettingsModal();
+    }
+  });
+
+  // Auto-open settings if incomplete config (이제 핸들러 바인딩 후)
   const cfg = state.config;
   const missingSetup = !cfg?.user_id ||
     !cfg?.obsidian_base_path ||
@@ -322,7 +341,7 @@ async function init() {
 
   if (missingSetup) {
     showToast('초기 설정을 완료해 주세요.', 'info', 5000);
-    openSettingsModal();
+    setTimeout(openSettingsModal, 500);  // DOM 완전히 준비된 후
   }
 
   // Populate sidebar subfolder dropdown
@@ -339,13 +358,6 @@ async function init() {
       });
     });
   });
-
-  // Settings modal
-  document.getElementById('btn-settings').addEventListener('click', openSettingsModal);
-  document.getElementById('btn-close-settings').addEventListener('click', closeSettingsModal);
-  document.getElementById('btn-cancel-settings').addEventListener('click', closeSettingsModal);
-  document.getElementById('btn-save-settings').addEventListener('click', saveSettingsModal);
-  document.getElementById('btn-pick-folder').addEventListener('click', pickObsidianFolder);
 
   // Close modal on backdrop click
   document.getElementById('settings-modal').addEventListener('click', e => {
@@ -399,11 +411,6 @@ async function init() {
     navigator.clipboard.writeText(state.lastGenerated.md)
       .then(() => showToast('마크다운이 클립보드에 복사되었습니다.', 'success'))
       .catch(() => showToast('클립보드 복사에 실패했습니다.', 'error'));
-  });
-
-  // Quit
-  document.getElementById('btn-quit').addEventListener('click', () => {
-    window.close();
   });
 
   // Init components

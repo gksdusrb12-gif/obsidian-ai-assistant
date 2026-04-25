@@ -45,8 +45,7 @@
     "windows": {
       "nsis": {
         "languages": ["Korean", "English"],
-        "installerIcon": "icons/icon.ico",
-        "installMode": "perUser"
+        "installMode": "currentUser"
       }
     },
     "macOS": {

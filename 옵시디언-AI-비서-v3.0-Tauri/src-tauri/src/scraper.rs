@@ -40,7 +40,8 @@ pub async fn scrape(url: &str) -> AppResult<ScrapeResult> {
 
     // Collect all element IDs to skip
     use std::collections::HashSet;
-    let mut skip_ids: HashSet<::scraper::node::NodeId> = HashSet::new();
+    let mut skip_ids: HashSet<::ego_tree::NodeId> = HashSet::new();
+                          ^^^^^^^^^^^^^^^^^^
     for sel in &drop_sels {
         for el in document.select(sel) {
             // Mark the element's node and all its descendants
@@ -68,7 +69,8 @@ pub async fn scrape(url: &str) -> AppResult<ScrapeResult> {
 
 fn collect_subtree(
     el: ::scraper::ElementRef<'_>,
-    ids: &mut std::collections::HashSet<::scraper::node::NodeId>,
+    ids: &mut std::collections::HashSet<::ego_tree::NodeId>,
+                                    ^^^^^^^^^^^^^^^^^^,
 ) {
     ids.insert(el.id());
     for child in el.children() {
@@ -80,7 +82,8 @@ fn collect_subtree(
 
 fn collect_text(
     el: ::scraper::ElementRef<'_>,
-    skip_ids: &std::collections::HashSet<::scraper::node::NodeId>,
+    skip_ids: &std::collections::HashSet<::ego_tree::NodeId>,
+                                     ^^^^^^^^^^^^^^^^^^,
 ) -> String {
     let mut buf = String::new();
     for node in el.children() {

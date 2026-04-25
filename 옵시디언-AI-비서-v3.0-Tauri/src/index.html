@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>옵시디언 AI 비서 v3</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ── Toast container ───────────────────────────────────────── -->
+  <div id="toast-container" aria-live="polite"></div>
+
+  <!-- ── Top bar ───────────────────────────────────────────────── -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <img src="../src-tauri/icons/128x128.png" alt="앱 아이콘" class="topbar-icon" onerror="this.style.display='none'" />
+      <span class="topbar-title">옵시디언 AI 비서</span>
+      <span class="topbar-version">v3.0</span>
+    </div>
+    <div class="topbar-right">
+      <button id="btn-settings" class="icon-btn" title="설정 열기" aria-label="설정">⚙️</button>
+    </div>
+  </header>
+
+  <!-- ── Main layout ───────────────────────────────────────────── -->
+  <div class="app-layout">
+
+    <!-- ── Sidebar ────────────────────────────────────────────── -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-header">📁 저장할 하위 폴더</div>
+        <div class="sidebar-folder-row">
+          <select id="sel-subfolder" class="select-input" title="저장 폴더 선택"></select>
+          <button id="btn-remove-subfolder" class="btn-ghost btn-sm" title="폴더 제거">❌</button>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <details id="new-folder-details">
+          <summary class="sidebar-create-summary">＋ 새 폴더 만들기</summary>
+          <div class="sidebar-create-body">
+            <input id="inp-new-folder" type="text" class="text-input" placeholder="폴더 이름 입력" />
+            <button id="btn-create-folder" class="btn-primary btn-sm">생성</button>
+          </div>
+        </details>
+      </div>
+
+      <div class="sidebar-spacer"></div>
+
+      <div class="sidebar-footer">
+        <button id="btn-quit" class="btn-danger btn-block">🛑 앱 종료</button>
+      </div>
+    </aside>
+
+    <!-- ── Main content ────────────────────────────────────────── -->
+    <main class="main-content">
+
+      <!-- ── RAG card ──────────────────────────────────────────── -->
+      <section class="card rag-card" id="rag-section">
+        <div class="rag-header">
+          <span class="section-title">📚 옵시디언 기존 지식 연결 <span class="optional-tag">(선택)</span></span>
+        </div>
+        <div class="rag-controls">
+          <div class="rag-dropdowns">
+            <select id="sel-rag-top" class="select-input" title="최상위 폴더 선택">
+              <option value="">(선택하지 않음)</option>
+            </select>
+            <select id="sel-rag-sub" class="select-input" title="하위 폴더 선택" disabled>
+              <option value="__all__">(전체 보기)</option>
+            </select>
+          </div>
+          <div class="rag-note-list" id="rag-note-list" hidden>
+            <div class="rag-note-list-inner">
+              <div id="rag-note-options" class="rag-note-options"></div>
+              <button id="btn-rag-add" class="btn-ghost btn-sm">추가</button>
+            </div>
+            <div id="rag-selected-notes" class="rag-selected-notes"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Tabs ──────────────────────────────────────────────── -->
+      <div class="tabs-bar">
+        <button class="tab-btn active" data-tab="file">📁 파일/음성/코드 분석</button>
+        <button class="tab-btn" data-tab="web">🌐 웹사이트 요약</button>
+        <button class="tab-btn" data-tab="memo">✍️ 메모</button>
+      </div>
+
+      <!-- ── Tab: 파일/음성/코드 ─────────────────────────────── -->
+      <section class="tab-panel card" id="tab-file" data-tab="file">
+        <div class="field-group">
+          <label class="field-label">파일 첨부 <span class="field-hint">(이미지·텍스트·코드)</span></label>
+          <div class="file-drop-row">
+            <input type="file" id="inp-file" class="file-input"
+              accept=".png,.jpg,.jpeg,.webp,.py,.js,.ts,.md,.txt,.json,.csv,.html,.css" />
+            <span id="file-name-display" class="file-name-display">선택된 파일 없음</span>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="inp-file-instructions">추가 지시사항 <span class="field-hint">(선택)</span></label>
+          <textarea id="inp-file-instructions" class="textarea-input" rows="3"
+            placeholder="예: 핵심 개념 위주로 정리해주세요."></textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label">음성 파일 <span class="field-hint">(mp3·wav·m4a·ogg·flac — Gemini 전용)</span></label>
+          <button id="btn-pick-audio" class="btn-ghost">🎙️ 음성 파일 선택…</button>
+          <span id="audio-path-display" class="file-name-display">선택된 파일 없음</span>
+        </div>
+        <button id="btn-analyze-file" class="btn-primary btn-with-icon">
+          <span class="btn-icon">✨</span> 분석 시작
+        </button>
+      </section>
+
+      <!-- ── Tab: 웹사이트 요약 ─────────────────────────────── -->
+      <section class="tab-panel card" id="tab-web" data-tab="web" hidden>
+        <div class="field-group">
+          <label class="field-label" for="inp-url">웹사이트 URL</label>
+          <input type="url" id="inp-url" class="text-input" placeholder="https://example.com" />
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="inp-web-instructions">추가 지시사항 <span class="field-hint">(선택)</span></label>
+          <textarea id="inp-web-instructions" class="textarea-input" rows="3"
+            placeholder="예: 주요 기술 스택 위주로 정리해주세요."></textarea>
+        </div>
+        <button id="btn-scrape-web" class="btn-primary btn-with-icon">
+          <span class="btn-icon">🌐</span> 추출 및 요약
+        </button>
+      </section>
+
+      <!-- ── Tab: 메모 ──────────────────────────────────────── -->
+      <section class="tab-panel card" id="tab-memo" data-tab="memo" hidden>
+        <div class="field-group">
+          <label class="field-label" for="inp-memo-title">메모 제목</label>
+          <input type="text" id="inp-memo-title" class="text-input" placeholder="예: 오늘의 회의 내용" />
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="inp-memo-body">메모 내용</label>
+          <textarea id="inp-memo-body" class="textarea-input" rows="6"
+            placeholder="정리할 메모를 자유롭게 입력하세요…"></textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="inp-memo-instructions">추가 지시사항 <span class="field-hint">(선택)</span></label>
+          <textarea id="inp-memo-instructions" class="textarea-input" rows="2"
+            placeholder="예: 액션아이템을 별도 목록으로 정리해주세요."></textarea>
+        </div>
+        <button id="btn-organize-memo" class="btn-primary btn-with-icon">
+          <span class="btn-icon">✍️</span> 정리 시작
+        </button>
+      </section>
+
+      <!-- ── Spinner (shared) ──────────────────────────────────── -->
+      <div id="spinner" class="spinner-overlay" hidden>
+        <div class="spinner-box">
+          <div class="spinner-ring"></div>
+          <p class="spinner-text">AI가 작업 중입니다…</p>
+        </div>
+      </div>
+
+      <!-- ── Preview ──────────────────────────────────────────── -->
+      <section class="card preview-card" id="preview-section" hidden>
+        <div class="section-title-row">
+          <span class="section-title">📄 미리보기</span>
+          <button id="btn-copy-md" class="btn-ghost btn-sm">📋 복사</button>
+        </div>
+        <div id="preview-content" class="preview-content markdown-body"></div>
+      </section>
+
+      <!-- ── Save block ────────────────────────────────────────── -->
+      <section class="card save-card" id="save-section" hidden>
+        <div class="section-title">💾 옵시디언에 저장</div>
+        <div class="save-fields">
+          <div class="field-group">
+            <label class="field-label" for="inp-confirm-id">본인 확인용 ID</label>
+            <input type="text" id="inp-confirm-id" class="text-input" placeholder="설정에서 입력한 ID와 동일하게 입력" />
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="inp-save-filename">파일명 <span class="field-hint">(.md 자동 추가)</span></label>
+            <input type="text" id="inp-save-filename" class="text-input" placeholder="예: 2026-04-25 정리 노트" />
+          </div>
+        </div>
+        <button id="btn-save-note" class="btn-primary btn-with-icon">
+          <span class="btn-icon">✅</span> 저장
+        </button>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ── Settings modal ────────────────────────────────────────── -->
+  <div id="settings-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span id="settings-title" class="modal-title">⚙️ 설정</span>
+        <button id="btn-close-settings" class="icon-btn" aria-label="닫기">✕</button>
+      </div>
+      <div class="modal-body">
+
+        <!-- 본인 확인 ID -->
+        <div class="settings-section">
+          <div class="settings-section-title">계정</div>
+          <div class="field-group">
+            <label class="field-label" for="cfg-user-id">본인 확인용 ID</label>
+            <input type="text" id="cfg-user-id" class="text-input" placeholder="저장 시 확인에 사용됩니다" />
+          </div>
+        </div>
+
+        <!-- API 키 -->
+        <div class="settings-section">
+          <div class="settings-section-title">API 키</div>
+          <div class="field-group">
+            <label class="field-label" for="cfg-gemini-key">Google Gemini API Key</label>
+            <input type="password" id="cfg-gemini-key" class="text-input" placeholder="AIza…" autocomplete="off" />
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="cfg-openai-key">OpenAI API Key</label>
+            <input type="password" id="cfg-openai-key" class="text-input" placeholder="sk-…" autocomplete="off" />
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="cfg-anthropic-key">Anthropic API Key</label>
+            <input type="password" id="cfg-anthropic-key" class="text-input" placeholder="sk-ant-…" autocomplete="off" />
+          </div>
+        </div>
+
+        <!-- 모델 선택 -->
+        <div class="settings-section">
+          <div class="settings-section-title">AI 모델</div>
+          <div class="field-group">
+            <label class="field-label" for="cfg-model">사용할 모델</label>
+            <select id="cfg-model" class="select-input">
+              <optgroup label="Google Gemini">
+                <option value="gemini-2.5-pro-preview-05-06">Gemini 2.5 Pro Preview</option>
+                <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                <option value="gemini-2.0-flash-lite">Gemini 2.0 Flash Lite</option>
+                <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+              </optgroup>
+              <optgroup label="OpenAI">
+                <option value="gpt-4o">GPT-4o</option>
+                <option value="gpt-4o-mini">GPT-4o Mini</option>
+                <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                <option value="o4-mini">o4-mini</option>
+                <option value="o3">o3</option>
+                <option value="o1">o1</option>
+              </optgroup>
+              <optgroup label="Anthropic Claude">
+                <option value="claude-opus-4-5">Claude Opus 4.5</option>
+                <option value="claude-sonnet-4-5">Claude Sonnet 4.5</option>
+                <option value="claude-haiku-3-5">Claude Haiku 3.5</option>
+                <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet</option>
+                <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+
+        <!-- 옵시디언 경로 -->
+        <div class="settings-section">
+          <div class="settings-section-title">옵시디언 볼트</div>
+          <div class="field-group">
+            <label class="field-label" for="cfg-base-path">볼트 경로</label>
+            <div class="path-row">
+              <input type="text" id="cfg-base-path" class="text-input" placeholder="/Users/me/Obsidian" />
+              <button id="btn-pick-folder" class="btn-ghost">📁 폴더 선택</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 테마 -->
+        <div class="settings-section">
+          <div class="settings-section-title">테마</div>
+          <div class="theme-radio-group">
+            <label class="radio-label"><input type="radio" name="cfg-theme" value="obsidian" /> 옵시디언 (기본)</label>
+            <label class="radio-label"><input type="radio" name="cfg-theme" value="dark" /> 다크</label>
+            <label class="radio-label"><input type="radio" name="cfg-theme" value="light" /> 라이트</label>
+            <label class="radio-label"><input type="radio" name="cfg-theme" value="system" /> 시스템</label>
+          </div>
+        </div>
+
+        <!-- 원격 동기화 (접기/펼치기) -->
+        <div class="settings-section">
+          <details id="remote-details">
+            <summary class="settings-section-title settings-summary">원격 동기화</summary>
+            <div class="remote-body">
+              <div class="field-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="cfg-remote-enabled" />
+                  동기화 활성화
+                </label>
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="cfg-remote-endpoint">엔드포인트 URL</label>
+                <input type="url" id="cfg-remote-endpoint" class="text-input" placeholder="https://your-sync-server.com" />
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="cfg-remote-interval">동기화 간격 (분)</label>
+                <input type="number" id="cfg-remote-interval" class="text-input" min="5" max="1440" value="60" />
+              </div>
+            </div>
+          </details>
+        </div>
+
+      </div><!-- /modal-body -->
+      <div class="modal-footer">
+        <button id="btn-save-settings" class="btn-primary">저장</button>
+        <button id="btn-cancel-settings" class="btn-ghost">취소</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

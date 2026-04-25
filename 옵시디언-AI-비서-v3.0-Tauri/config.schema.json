@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Obsidian AI Assistant Config v3",
+  "type": "object",
+  "properties": {
+    "schema_version": { "type": "integer", "const": 3 },
+    "user_id": { "type": "string" },
+    "obsidian_base_path": { "type": "string" },
+    "obsidian_subfolders": { "type": "array", "items": { "type": "string" } },
+    "providers": {
+      "type": "object",
+      "properties": {
+        "gemini":    { "type": "object", "properties": { "api_key": { "type": "string" } } },
+        "openai":    { "type": "object", "properties": { "api_key": { "type": "string" } } },
+        "anthropic": { "type": "object", "properties": { "api_key": { "type": "string" } } }
+      }
+    },
+    "selected_model": { "type": "string" },
+    "theme": { "type": "string", "enum": ["obsidian", "dark", "light", "system"] },
+    "remote": {
+      "type": "object",
+      "properties": {
+        "enabled":  { "type": "boolean", "default": false },
+        "endpoint": { "type": "string" },
+        "sync_interval_minutes": { "type": "integer", "default": 60 }
+      }
+    },
+    "updated_at": { "type": "string" }
+  },
+  "required": ["schema_version", "selected_model"],
+  "additionalProperties": true
+}

@@ -1,0 +1,56 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "옵시디언 AI 비서",
+  "version": "3.0.0",
+  "identifier": "com.yeongyu.obsidian-ai-assistant",
+  "build": {
+    "beforeDevCommand": "",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "",
+    "frontendDist": "../src"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "옵시디언 AI 비서",
+        "width": 1280,
+        "height": 860,
+        "minWidth": 900,
+        "minHeight": 600,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "transparent": false,
+        "alwaysOnTop": false,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' https://cdn.jsdelivr.net data:; script-src 'self'; connect-src 'self' ipc: http://ipc.localhost https://generativelanguage.googleapis.com https://api.openai.com https://api.anthropic.com"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "category": "Productivity",
+    "shortDescription": "Gemini · GPT · Claude 통합 옵시디언 비서",
+    "longDescription": "옵시디언 vault에 AI 분석 결과를 마크다운으로 저장하는 도구. Gemini, OpenAI, Anthropic 모델 모두 지원.",
+    "windows": {
+      "nsis": {
+        "languages": ["Korean", "English"],
+        "installerIcon": "icons/icon.ico",
+        "installMode": "perUser"
+      }
+    },
+    "macOS": {
+      "minimumSystemVersion": "12.0"
+    }
+  }
+}

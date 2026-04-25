@@ -1,0 +1,24 @@
+name: Generate Tauri Signing Key (one-time)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli --version "^2.0" --locked
+      - name: Generate keypair
+        run: |
+          mkdir -p signing-keys
+          cargo tauri signer generate -w signing-keys/private.key -f --ci
+          echo "=== private.key ===" && cat signing-keys/private.key
+          echo "=== private.key.pub ===" && cat signing-keys/private.key.pub
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tauri-signing-keys
+          path: signing-keys/
+          retention-days: 1

@@ -57,15 +57,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: ${{ env.PROJECT_DIR }}
-          tagName: v__VERSION__
-          releaseName: '옵시디언 AI 비서 v__VERSION__'
+          tagName: ${{ github.ref_name }}
+          releaseName: '옵시디언 AI 비서 ${{ github.ref_name }}'
           releaseBody: |
-            # 옵시디언 AI 비서 v__VERSION__
+            # 옵시디언 AI 비서 ${{ github.ref_name }}
 
             ## 다운로드
-            - **Windows**: `옵시디언.AI.비서_*_x64-setup.exe` 또는 `*_x64_en-US.msi`
+            - **Windows**: `옵시디언.AI.비서_*_x64-setup.exe` (NSIS 설치 마법사)
             - **macOS Apple Silicon + Intel**: `옵시디언.AI.비서_*_universal.dmg`
+            - **Linux**: `*.deb` 또는 `*.AppImage`
+
+            ## 설치
+            1. 본인 OS에 맞는 파일 다운로드
+            2. 더블클릭 → 설치 마법사 따라가기
+            3. 시작 메뉴(Win) / Launchpad(Mac) 에서 "옵시디언 AI 비서" 실행
           releaseDraft: true
           prerelease: false
-        
           args: ${{ matrix.args }}

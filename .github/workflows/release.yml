@@ -55,6 +55,8 @@ jobs:
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           projectPath: ${{ env.PROJECT_DIR }}
           tagName: ${{ github.ref_name }}
@@ -73,4 +75,6 @@ jobs:
             3. 시작 메뉴(Win) / Launchpad(Mac) 에서 "옵시디언 AI 비서" 실행
           releaseDraft: true
           prerelease: false
+          includeUpdaterJson: true
+          updaterJsonPreferNsis: true
           args: ${{ matrix.args }}

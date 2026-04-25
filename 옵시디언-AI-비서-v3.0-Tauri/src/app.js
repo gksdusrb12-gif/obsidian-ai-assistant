@@ -309,6 +309,7 @@ async function init() {
     state.config = await cmdGetConfig();
   } catch (_) {
     state.config = null;
+    initUpdater(showToast);
   }
 
   // Auto-open settings if incomplete config

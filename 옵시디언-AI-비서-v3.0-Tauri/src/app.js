@@ -5,6 +5,7 @@
 
 import { initTabs } from './components/tabs.js';
 import { initRag }  from './components/rag.js';
+import { initUpdater } from './components/updater.js';
 
 // ── Tauri API imports ─────────────────────────────────────────────────────────
 // Tauri v2 exposes globals via window.__TAURI__

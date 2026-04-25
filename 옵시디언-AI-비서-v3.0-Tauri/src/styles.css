@@ -565,6 +565,7 @@ code, pre, .mono {
   justify-content: center;
   padding: 40px;
 }
+.spinner-overlay[hidden] { display: none !important; }
 
 .spinner-box {
   display: flex;

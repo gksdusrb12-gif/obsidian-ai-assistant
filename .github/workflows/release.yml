@@ -66,10 +66,133 @@ jobs:
 
             ## 다운로드
             - **Windows**: `*_x64-setup.exe`
-            - **macOS**: `*_universal.dmg`
+            - **macOS Apple Silicon + Intel**: `*_universal.dmg`
             - **Linux**: `*.deb` 또는 `*.AppImage`
+
+            ## 설치
+            1. 본인 OS에 맞는 파일 다운로드
+            2. 더블클릭 → 설치 마법사 따라가기
+            3. 시작 메뉴(Win) / Launchpad(Mac) 에서 "옵시디언 AI 비서" 실행
+
+            ## 자동 업데이트
+            기존 버전이 깔려있다면 앱 시작 후 자동으로 업데이트 알림이 뜹니다.
           releaseDraft: true
           prerelease: false
-          includeUpdaterJson: true
-          updaterJsonPreferNsis: true
           args: ${{ matrix.args }}
+
+      - name: Upload updater bundle and signature with ASCII filename
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        working-directory: ${{ env.PROJECT_DIR }}/src-tauri/target
+        run: |
+          set -e
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            SRC="release/bundle/nsis"
+            BUNDLE_GLOB="*-setup.nsis.zip"
+            SIG_GLOB="*-setup.nsis.zip.sig"
+            DEST_BUNDLE="updater-windows-x86_64.nsis.zip"
+            DEST_SIG="updater-windows-x86_64.nsis.zip.sig"
+          elif [ "$RUNNER_OS" = "macOS" ]; then
+            SRC="universal-apple-darwin/release/bundle/macos"
+            BUNDLE_GLOB="*.app.tar.gz"
+            SIG_GLOB="*.app.tar.gz.sig"
+            DEST_BUNDLE="updater-darwin-universal.app.tar.gz"
+            DEST_SIG="updater-darwin-universal.app.tar.gz.sig"
+          else
+            SRC="release/bundle/appimage"
+            BUNDLE_GLOB="*.AppImage.tar.gz"
+            SIG_GLOB="*.AppImage.tar.gz.sig"
+            DEST_BUNDLE="updater-linux-x86_64.AppImage.tar.gz"
+            DEST_SIG="updater-linux-x86_64.AppImage.tar.gz.sig"
+          fi
+
+          BUNDLE_PATH=$(find "$SRC" -name "$BUNDLE_GLOB" 2>/dev/null | head -1 || true)
+          SIG_PATH=$(find "$SRC" -name "$SIG_GLOB" 2>/dev/null | head -1 || true)
+
+          if [ -z "$BUNDLE_PATH" ] || [ -z "$SIG_PATH" ]; then
+            echo "::warning::Updater bundle or sig not found"
+            ls -la "$SRC" || true
+            exit 0
+          fi
+
+          echo "Found bundle: $BUNDLE_PATH"
+          echo "Found sig:    $SIG_PATH"
+
+          mkdir -p /tmp/upload
+          cp "$BUNDLE_PATH" "/tmp/upload/$DEST_BUNDLE"
+          cp "$SIG_PATH" "/tmp/upload/$DEST_SIG"
+
+          gh release upload "$TAG" "/tmp/upload/$DEST_BUNDLE" "/tmp/upload/$DEST_SIG" --clobber --repo "$REPO"
+
+  publish-updater-json:
+    needs: build-tauri
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and upload latest.json
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -e
+          BASE_URL="https://github.com/$REPO/releases/download/$TAG"
+          VERSION=$(jq -r .version "${{ env.PROJECT_DIR }}/src-tauri/tauri.conf.json")
+          PUB_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          mkdir -p /tmp/sigs
+          cd /tmp/sigs
+
+          # Download .sig assets from the (possibly draft) release
+          gh release download "$TAG" --pattern '*.sig' --repo "$REPO" || true
+          ls -la
+
+          json_escape() {
+            if [ -f "$1" ] && [ -s "$1" ]; then
+              python3 -c 'import json,sys; sys.stdout.write(json.dumps(sys.stdin.read()))' < "$1"
+            else
+              echo '""'
+            fi
+          }
+
+          WIN_SIG=$(json_escape "updater-windows-x86_64.nsis.zip.sig")
+          MAC_SIG=$(json_escape "updater-darwin-universal.app.tar.gz.sig")
+          LIN_SIG=$(json_escape "updater-linux-x86_64.AppImage.tar.gz.sig")
+
+          cat > /tmp/latest.json <<EOF
+          {
+            "version": "$VERSION",
+            "notes": "옵시디언 AI 비서 $TAG",
+            "pub_date": "$PUB_DATE",
+            "platforms": {
+              "windows-x86_64": {
+                "signature": $WIN_SIG,
+                "url": "$BASE_URL/updater-windows-x86_64.nsis.zip"
+              },
+              "darwin-x86_64": {
+                "signature": $MAC_SIG,
+                "url": "$BASE_URL/updater-darwin-universal.app.tar.gz"
+              },
+              "darwin-aarch64": {
+                "signature": $MAC_SIG,
+                "url": "$BASE_URL/updater-darwin-universal.app.tar.gz"
+              },
+              "linux-x86_64": {
+                "signature": $LIN_SIG,
+                "url": "$BASE_URL/updater-linux-x86_64.AppImage.tar.gz"
+              }
+            }
+          }
+          EOF
+
+          echo "--- latest.json ---"
+          cat /tmp/latest.json
+          echo "-------------------"
+
+          gh release upload "$TAG" /tmp/latest.json --clobber --repo "$REPO"

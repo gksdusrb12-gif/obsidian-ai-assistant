@@ -6,15 +6,12 @@ authors = ["연규"]
 edition = "2021"
 rust-version = "1.77"
 
-
 [lib]
 name = "obsidian_ai_assistant_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
-
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
-
 
 [dependencies]
 tauri = { version = "2", features = [] }
@@ -26,17 +23,30 @@ tauri-plugin-notification = "2"
 tauri-plugin-updater = "2"
 tauri-plugin-process = "2"
 
-
 # JSON
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-
 
 # HTTP
 reqwest = { version = "0.12", features = ["json", "multipart", "rustls-tls", "stream"], default-features = false }
 tokio = { version = "1", features = ["full"] }
 
-
 # HTML scraping
 scraper = "0.20"
 ego-tree = "0.6"
+
+# Base64 (for image encoding to LLM APIs)
+base64 = "0.22"
+
+# Error handling
+thiserror = "1"
+anyhow = "1"
+
+# Misc
+chrono = { version = "0.4", features = ["serde"] }
+dirs = "5"
+url = "2"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

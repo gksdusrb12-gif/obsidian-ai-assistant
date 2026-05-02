@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>옵시디언 AI 비서 v3</title>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles-theme.css" />
 </head>
 <body>
   <!-- ── Toast container ───────────────────────────────────────── -->
@@ -160,7 +161,27 @@
 
       <!-- ── Save block ────────────────────────────────────────── -->
       <section class="card save-card" id="save-section" hidden>
-        <div class="section-title">💾 옵시디언에 저장</div>
+        <div class="section-title">💾 어디에 저장할까요?</div>
+        <div class="save-destination" role="radiogroup" aria-label="저장 위치">
+          <div class="dest-card active" data-dest="obsidian" role="radio" aria-checked="true" tabindex="0">
+            <div class="dest-icon obsidian" aria-hidden="true">◆</div>
+            <div class="dest-text">
+              <div class="dest-name">옵시디언 vault</div>
+              <div class="dest-desc">로컬 마크다운 노트로 저장</div>
+            </div>
+            <div class="dest-radio" aria-hidden="true"></div>
+          </div>
+          <div class="dest-card disabled" data-dest="notion" role="radio" aria-checked="false" tabindex="-1" aria-disabled="true">
+            <div class="dest-badge">곧 출시</div>
+            <div class="dest-icon notion" aria-hidden="true">N</div>
+            <div class="dest-text">
+              <div class="dest-name">노션 페이지</div>
+              <div class="dest-desc">데이터베이스 / 페이지에 저장</div>
+            </div>
+            <div class="dest-radio" aria-hidden="true"></div>
+          </div>
+        </div>
+        <input type="hidden" id="save-destination" value="obsidian" />
         <div class="save-fields">
           <div class="field-group">
             <label class="field-label" for="inp-confirm-id">본인 확인용 ID</label>
@@ -301,5 +322,27 @@
   </div>
 
   <script type="module" src="app.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const cards = document.querySelectorAll('.dest-card');
+      const hidden = document.getElementById('save-destination');
+      cards.forEach(card => {
+        card.addEventListener('click', () => {
+          if (card.classList.contains('disabled')) return;
+          cards.forEach(c => { c.classList.remove('active'); c.setAttribute('aria-checked', 'false'); });
+          card.classList.add('active');
+          card.setAttribute('aria-checked', 'true');
+          if (hidden) hidden.value = card.dataset.dest;
+        });
+        card.addEventListener('keydown', (e) => {
+          if ((e.key === 'Enter' || e.key === ' ') && !card.classList.contains('disabled')) {
+            e.preventDefault();
+            card.click();
+          }
+        });
+      });
+    });
+  </script>
 </body>
 </html>

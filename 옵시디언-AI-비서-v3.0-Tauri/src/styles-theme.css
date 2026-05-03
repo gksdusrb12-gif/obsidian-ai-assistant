@@ -3,6 +3,7 @@
   --bg-secondary: #0f0f1a;
   --bg-card: #0f1521;
   --border-soft: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.12);
   --text-primary: #e5e7eb;
   --text-secondary: #9ca3af;
   --text-tertiary: #6b7280;
@@ -41,28 +42,15 @@ body::before {
   mix-blend-mode: screen;
 }
 
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 450'><g stroke='%2322d3ee' stroke-width='0.4' fill='none' opacity='0.5'><polygon points='40,60 80,50 95,85 65,110 35,90'/><polygon points='95,85 145,75 155,130 105,140 65,110'/><polygon points='505,60 545,75 555,120 510,135 475,100'/><polygon points='450,300 500,295 520,345 475,370 430,335'/><circle cx='95' cy='85' r='1.5' fill='%2322d3ee'/><circle cx='145' cy='75' r='1' fill='%2322d3ee'/><circle cx='545' cy='75' r='1.5' fill='%2322d3ee'/><circle cx='500' cy='295' r='1' fill='%23a78bfa'/></g></svg>");
-  background-size: 600px 450px;
-  background-repeat: repeat;
-  background-attachment: fixed;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.18;
-}
-
-.topbar, .app-layout, .sidebar, main, .main, footer, .toast {
+.topbar, .app-layout, .sidebar, main, .main, footer, .toast, .tabs {
   position: relative;
   z-index: 1;
 }
 
 .topbar {
-  background: rgba(10, 10, 18, 0.88) !important;
+  background: rgba(10, 10, 18, 0.85) !important;
   border-bottom: 0.5px solid var(--border-soft) !important;
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
 }
 .topbar-title {
   background: linear-gradient(135deg, var(--accent-cyan), #a78bfa);
@@ -74,20 +62,13 @@ body::after {
 .topbar-version { color: var(--text-tertiary) !important; }
 
 .sidebar {
-  background: rgba(15, 21, 33, 0.6) !important;
+  background: rgba(15, 21, 33, 0.45) !important;
   border-right: 0.5px solid var(--border-soft) !important;
-  backdrop-filter: blur(8px);
-}
-
-.card, .save-card {
-  background: rgba(15, 21, 33, 0.82) !important;
-  backdrop-filter: blur(10px);
-  border: 0.5px solid var(--border-soft) !important;
-  border-radius: 14px !important;
+  backdrop-filter: blur(12px);
 }
 
 input, textarea, select, .text-input {
-  background: rgba(10, 10, 18, 0.75) !important;
+  background: rgba(10, 10, 18, 0.55) !important;
   color: var(--text-primary) !important;
   border: 0.5px solid var(--border-soft) !important;
   border-radius: 10px !important;
@@ -107,10 +88,7 @@ input:focus, textarea:focus, select:focus, .text-input:focus {
   box-shadow: 0 0 20px rgba(34, 211, 238, 0.22);
   transition: transform 0.15s, box-shadow 0.2s;
 }
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 0 28px rgba(34, 211, 238, 0.4) !important;
-}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 0 28px rgba(34, 211, 238, 0.4) !important; }
 .btn-primary:active { transform: scale(0.98); }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
@@ -122,11 +100,7 @@ input:focus, textarea:focus, select:focus, .text-input:focus {
 }
 .btn-ghost:hover { color: var(--accent-cyan) !important; border-color: var(--accent-cyan) !important; }
 
-.section-title {
-  color: var(--text-primary) !important;
-  font-weight: 500;
-}
-
+.section-title { color: var(--text-primary) !important; font-weight: 500; }
 .tab-button.active, .tab.active, .nav-item.active {
   color: var(--accent-cyan) !important;
   border-bottom-color: var(--accent-cyan) !important;
@@ -139,6 +113,75 @@ input:focus, textarea:focus, select:focus, .text-input:focus {
   backdrop-filter: blur(10px);
 }
 
+/* === Layout A: Frosted (default) === */
+body[data-layout="frosted"] .card,
+body[data-layout="frosted"] .save-card,
+body:not([data-layout]) .card,
+body:not([data-layout]) .save-card {
+  background: rgba(15, 21, 33, 0.32) !important;
+  backdrop-filter: blur(22px) !important;
+  -webkit-backdrop-filter: blur(22px) !important;
+  border: 0.5px solid var(--border-medium) !important;
+  border-radius: 14px !important;
+}
+
+/* === Layout B: Edge (cards pushed to left, polygon center exposed) === */
+body[data-layout="edge"] .card,
+body[data-layout="edge"] .save-card {
+  background: rgba(15, 21, 33, 0.55) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 0.5px solid var(--border-medium) !important;
+  border-radius: 14px !important;
+  max-width: 460px;
+  margin-left: 0 !important;
+  margin-right: auto;
+}
+body[data-layout="edge"] main,
+body[data-layout="edge"] .main,
+body[data-layout="edge"] .main-content,
+body[data-layout="edge"] .content {
+  max-width: 500px;
+  margin-right: auto;
+  padding-right: 0;
+}
+body[data-layout="edge"] .preview-card,
+body[data-layout="edge"] #preview-section,
+body[data-layout="edge"] .preview-content {
+  max-width: 460px;
+  margin-left: 0 !important;
+}
+
+/* Layout toggle button in topbar */
+.layout-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  margin-right: 8px;
+  background: rgba(10, 10, 18, 0.5);
+  border: 0.5px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 2px;
+  vertical-align: middle;
+}
+.layout-toggle button {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.layout-toggle button:hover { color: var(--text-primary); }
+.layout-toggle button.active {
+  background: var(--accent-cyan);
+  color: #04141a;
+}
+
+/* === Save destination toggle === */
 .save-destination {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -151,7 +194,7 @@ input:focus, textarea:focus, select:focus, .text-input:focus {
   gap: 12px;
   align-items: center;
   padding: 14px 16px;
-  background: rgba(10, 10, 18, 0.55);
+  background: rgba(10, 10, 18, 0.45);
   border: 0.5px solid var(--border-soft);
   border-radius: 12px;
   cursor: pointer;

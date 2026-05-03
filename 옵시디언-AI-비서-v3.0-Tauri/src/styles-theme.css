@@ -1,3 +1,21 @@
+
+/* CRITICAL: Toast container must be above polygon background overlay */
+#toast-container {
+  position: fixed !important;
+  top: 20px;
+  right: 20px;
+  z-index: 999999 !important;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+#toast-container > * { pointer-events: auto; }
+.toast {
+  z-index: 999999 !important;
+  position: relative;
+}
+
 :root {
   --bg-primary: #0a0a12;
   --bg-secondary: #0f0f1a;

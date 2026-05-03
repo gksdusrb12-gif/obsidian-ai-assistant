@@ -309,8 +309,10 @@ async function init() {
     state.config = await cmdGetConfig();
   } catch (_) {
     state.config = null;
-    initUpdater(showToast);
   }
+
+  // 자동 업데이트 — 설정 로드 성공 여부와 무관하게 실행
+  initUpdater(showToast);
 
  // ★ 이벤트 핸들러를 가장 먼저 바인딩 (자동 모달 열기보다 먼저)
   document.getElementById('btn-settings').addEventListener('click', openSettingsModal);

@@ -118,21 +118,23 @@ body[data-layout="frosted"] .card,
 body[data-layout="frosted"] .save-card,
 body:not([data-layout]) .card,
 body:not([data-layout]) .save-card {
-  background: rgba(15, 21, 33, 0.32) !important;
-  backdrop-filter: blur(22px) !important;
-  -webkit-backdrop-filter: blur(22px) !important;
+  background: rgba(15, 21, 33, 0.18) !important;
+  backdrop-filter: blur(10px) saturate(1.1) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(1.1) !important;
   border: 0.5px solid var(--border-medium) !important;
   border-radius: 14px !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
 }
 
 /* === Layout B: Edge (cards pushed to left, polygon center exposed) === */
 body[data-layout="edge"] .card,
 body[data-layout="edge"] .save-card {
-  background: rgba(15, 21, 33, 0.32) !important;
-  backdrop-filter: blur(22px) !important;
-  -webkit-backdrop-filter: blur(22px) !important;
+  background: rgba(15, 21, 33, 0.18) !important;
+  backdrop-filter: blur(10px) saturate(1.1) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(1.1) !important;
   border: 0.5px solid var(--border-medium) !important;
   border-radius: 14px !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
   max-width: 460px;
   margin-left: auto !important;
   margin-right: 0 !important;

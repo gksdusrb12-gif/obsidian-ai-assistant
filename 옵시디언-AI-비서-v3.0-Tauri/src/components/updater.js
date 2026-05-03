@@ -1,66 +1,41 @@
-// 자동 업데이트 체크 (v3.1.7: native dialog 디버깅)
+// 자동 업데이트 체크
+//
+// 앱 시작 후 잠깐 뒤에 GitHub Releases에서 latest.json을 확인하고
+// 새 버전이 있으면 사용자에게 업데이트 알림 모달을 보여줌.
 
 const { check } = window.__TAURI__.updater;
-const { ask, message } = window.__TAURI__.dialog;
+const { ask } = window.__TAURI__.dialog;
 const { relaunch } = window.__TAURI__.process;
 
 export async function initUpdater(showToast) {
-  const dbg = (msg, type = 'info', duration = 6000) => {
-    try { showToast?.('[업데이트] ' + msg, type, duration); } catch {}
-    try { console.log('[updater]', msg); } catch {}
-  };
-
   setTimeout(async () => {
-    // Native message dialog — bypasses toast/CSS entirely
     try {
-      await message('[디버그] 자동 업데이트 확인을 시작합니다. 확인 누르면 진행됩니다.', { title: '업데이트 디버그', kind: 'info' });
-    } catch {}
+      const update = await check();
+      if (!update?.available) return;
 
-    dbg('업데이트 확인 중...', 'info', 4000);
-    let update;
-    try {
-      update = await check();
-    } catch (e) {
-      const m = (e && (e.message || e.toString())) || String(e);
-      try { await message('[디버그] check() 실패:\n\n' + m, { title: '업데이트 에러', kind: 'error' }); } catch {}
-      dbg('체크 실패: ' + m.slice(0, 200), 'error', 15000);
-      console.warn('Update check failed:', e);
-      return;
-    }
+      const wantToInstall = await ask(
+        `새 버전이 나왔어요!\n\n` +
+        `현재: v${update.currentVersion}\n` +
+        `최신: v${update.version}\n\n` +
+        `${update.body || ''}\n\n` +
+        `지금 업데이트할까요? (앱이 자동으로 다시 시작됩니다)`,
+        {
+          title: '옵시디언 AI 비서 업데이트',
+          kind: 'info',
+          okLabel: '업데이트',
+          cancelLabel: '나중에',
+        }
+      );
 
-    if (!update) {
-      try { await message('[디버그] check() 결과가 null입니다. 응답이 없습니다.', { title: '업데이트', kind: 'warning' }); } catch {}
-      dbg('check() 결과가 null', 'warning', 10000);
-      return;
-    }
+      if (!wantToInstall) {
+        showToast?.('업데이트는 다음에 안내해드릴게요.', 'info');
+        return;
+      }
 
-    if (!update.available) {
-      try { await message('[디버그] 이미 최신 버전입니다.\n현재 버전: v' + update.currentVersion, { title: '업데이트', kind: 'info' }); } catch {}
-      dbg('이미 최신 버전 (현재: v' + update.currentVersion + ')', 'success', 5000);
-      return;
-    }
+      showToast?.('업데이트 다운로드 중...', 'info', 30000);
 
-    dbg('새 버전 발견! 현재 v' + update.currentVersion + ' → 최신 v' + update.version, 'success', 8000);
-
-    const wantToInstall = await ask(
-      '새 버전이 나왔어요!\n\n' +
-      '현재: v' + update.currentVersion + '\n' +
-      '최신: v' + update.version + '\n\n' +
-      (update.body || '') + '\n\n' +
-      '지금 업데이트할까요? (앱이 자동으로 다시 시작됩니다)',
-      { title: '옵시디언 AI 비서 업데이트', kind: 'info', okLabel: '업데이트', cancelLabel: '나중에' }
-    );
-
-    if (!wantToInstall) {
-      showToast?.('업데이트는 다음에 안내해드릴게요.', 'info');
-      return;
-    }
-
-    showToast?.('업데이트 다운로드 중...', 'info', 30000);
-
-    let downloaded = 0;
-    let totalBytes = 0;
-    try {
+      let downloaded = 0;
+      let totalBytes = 0;
       await update.downloadAndInstall((event) => {
         switch (event.event) {
           case 'Started':
@@ -80,9 +55,7 @@ export async function initUpdater(showToast) {
       });
       await relaunch();
     } catch (e) {
-      const m = (e && (e.message || e.toString())) || String(e);
-      try { await message('[디버그] 다운로드/설치 실패:\n\n' + m, { title: '업데이트 에러', kind: 'error' }); } catch {}
-      dbg('다운로드/설치 실패: ' + m.slice(0, 200), 'error', 15000);
+      console.warn('Update check failed:', e);
     }
   }, 5000);
 }

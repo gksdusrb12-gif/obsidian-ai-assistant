@@ -3,10 +3,13 @@
 const { check } = window.__TAURI__.updater;
 const { ask } = window.__TAURI__.dialog;
 const { relaunch } = window.__TAURI__.process;
+const { getVersion } = window.__TAURI__.app;
 
 export async function initUpdater(showToast) {
   setTimeout(async () => {
-    showToast?.('업데이트 확인 중...', 'info', 4000);
+    let installedVersion = '?';
+    try { installedVersion = await getVersion(); } catch (_) {}
+    showToast?.('업데이트 확인 중... (현재 v' + installedVersion + ')', 'info', 6000);
     let update;
     try {
       update = await check();
@@ -18,7 +21,7 @@ export async function initUpdater(showToast) {
     }
 
     if (!update) {
-      showToast?.('체크 응답 없음 (null)', 'warning', 8000);
+      showToast?.('체크 응답 없음 — 현재 v' + installedVersion + ' 이미 최신이거나 endpoint 응답 없음', 'warning', 12000);
       return;
     }
 

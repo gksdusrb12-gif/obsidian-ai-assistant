@@ -8,21 +8,7 @@
   <link rel="stylesheet" href="styles-theme.css" />
 </head>
 <body>
-  <div id="debug-banner-v318" style="position:fixed;top:0;left:0;right:0;background:#dc2626;color:#fff;padding:14px 20px;font-size:14px;font-weight:600;z-index:2147483647;text-align:center;font-family:sans-serif;">v3.1.8 DEBUG — 이 빨간 띄가 보이면 HTML은 정상 로드됨</div>
-  <script>
-    try {
-      setTimeout(function(){
-        try {
-          var d = document.createElement('div');
-          d.style.cssText = 'position:fixed;top:60px;left:0;right:0;background:#16a34a;color:#fff;padding:14px 20px;font-size:14px;font-weight:600;z-index:2147483647;text-align:center;font-family:sans-serif;';
-          d.textContent = '[인라인 JS] inline 스크립트 실행됨!';
-          document.body.appendChild(d);
-        } catch(e) {}
-      }, 1000);
-    } catch(e) {}
-  </script>
-  <script type="module" src="debug.js"></script>
-  <!-- ── Toast container ───────────────────────────────────────── -->
+    <!-- ── Toast container ───────────────────────────────────────── -->
   <div id="toast-container" aria-live="polite"></div>
 
   <!-- ── Top bar ───────────────────────────────────────────────── -->
@@ -363,22 +349,6 @@
     });
   </script>
 
-  <script>
-    (function() {
-      const saved = localStorage.getItem('layout-mode') || 'frosted';
-      document.body.dataset.layout = saved;
-      document.addEventListener('DOMContentLoaded', () => {
-        const btns = document.querySelectorAll('.layout-toggle button');
-        btns.forEach(b => {
-          b.classList.toggle('active', b.dataset.mode === saved);
-          b.addEventListener('click', () => {
-            document.body.dataset.layout = b.dataset.mode;
-            localStorage.setItem('layout-mode', b.dataset.mode);
-            btns.forEach(x => x.classList.toggle('active', x === b));
-          });
-        });
-      });
-    })();
-  </script>
+  <script type="module" src="layout-toggle.js"></script>
 </body>
 </html>
